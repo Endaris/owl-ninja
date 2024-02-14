@@ -1,4 +1,4 @@
-require("game.libs.batteries.init"):export()
+require("game.libs.batteries"):export()
 local baton = require("game.libs.baton")
 
 Input = baton.new({
@@ -25,5 +25,5 @@ function love.update(dt)
 end
 
 function love.draw()
-
+  love.graphics.print("Hello Owl Ninja")
 end
