@@ -1,0 +1,7 @@
+Tiled for creating maps
+Bump for collision detection
+STI for loading up tiled with Bump
+Batteries for general usage and pathfinding
+Slab for UI
+baton for inputs
+speakk/lighter or a13X-B/bitumbra for lights and shadows

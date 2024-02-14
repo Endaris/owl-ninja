@@ -1,0 +1,156 @@
+More broad planning:
+
+Groundwork:
+Create a map with collidable walls and an owl that can walk around
+(everything is still bright and there is full visibility)
+
+List of work items:
+- Basic graphics for the owl (stand + shimmy, one direction only is fine for initial testing)
+- Basic tileset
+- Testmap in Tiled with collidable walls
+- Basic entity system
+- Basic input logic (left stick/WASD only, I don't own a controller atm so I'll have to implement keyboard controls as well albeit them being not really optimal for some of the design pieces)
+
+Questions to answer:
+What tilesize do we use?
+Which properties do the collidable objects need in tiled?
+
+Core Item 1:
+Add wallhugs
+
+List of work items:
+- Add a property to the Tiled testmap to mark objects as shimmyable opposed to just collidable (e.g. a chest may be a collidable but not possible to shimmy against)
+- Implement interaction with shimmyable objects
+
+Questions to answer:
+How long does the player need to hold direction against a wall and how orthogonal do they need to hold against the wall as to avoid accidental wallhugs?
+How long is the wall hug animation and is the wallhug process/animation cancellable by stopping to hold the input against the wall?
+How is the hitbox of the owl being affected by shimmying against a wall and where is their hitbox going to be exactly?
+
+Core Item 2:
+Create selective visibility depending on owl facing direction (basic)
+(technically this means darkening everywhere besides the cone the owl looks at)
+
+List of work items:
+- Create owl head assets
+- Create a shader that obstruct everything outside a cone
+  For this core item that means everything will get either completely obstructed or get its color/alpha value multiplied with a certain value
+- Implement input logic for right stick to turn a cone
+  Snapback to body orientation when right stick is unused
+Questions to answer:
+What kind of asset do we need for the owl head and how would I draw it in code? Given that you're supposed to be able to fine control
+How wide is the cone? According to some internet search 110° total of which only the center 70° is binocular
+
+
+
+Core Item 3:
+Elaborate graphics for the owl body (stand, walk, shimmy, animations where necessary)
+
+List of work items:
+- Create assets
+- Use the assets
+
+
+Core Item 4:
+Kunai throw
+
+List of work items:
+- Create a kunai graphic
+- Create a thunk SFX
+- Create a throw animation
+- Create Kunai class with simple projectile physics
+- Add a sound indicator
+
+Questions to answer:
+How fast should kunais fly?
+How long do thrown Kunais take to disappear on their own or do they never?
+Do Kunais flick away from walls or stab into them?
+
+
+Core Item 5:
+Enemies (immobile target dummies)
+
+List of work items:
+- Create a health / damage system
+- Create assets for one basic type of enemy
+- Add damage to kunais
+
+
+Core Item 6:
+Enemies (states/phases)
+
+List of work items:
+- Add state system (scout, alert, detected) for the purpose of damage calculation
+- Add event detection (sound/vision) to cycle through states
+- Add a parry animation/sfx if it didn't happen yet (could also be a polish item?)
+
+Questions to answer:
+How long does each state last until it drops to the state below?
+What is the vision cone / hearing range? (I suppose this could differ per enemy type but for starters we should make only one)
+Do we want to indicate it? (if yes, probably an extra part for this item)
+
+
+Core Item 7:
+Enemies (movement)
+
+List of work items:
+- A slightly more elaborate test level with sensible routes available
+- Add route assignment to enemies
+- Add pathfinding to enemies for reacting to unexpected events / chases
+
+Questions to answer:
+How are "educated guesses" supposed to look for enemies chasing after kunai sounds / owls?
+Predictable or partially random?
+How optimal should they chase?
+How fast are they actually in their different states?
+
+
+Core Item 8:
+Dodge roll / dash
+
+List of work items:
+- Create an animation
+- Implement the input interaction + physics
+
+Questions to answer:
+Is there a cooldown period for dashing?
+Visual indicator for the cooldown?
+Does the dash/roll make a sound? Any reason to not just spam rolls really? Like losing feathers? dunno
+
+
+
+Polishing aspects of the game beyond the most basic form:
+
+-- Vision --
+
+Polish Item 1:
+Make the cone interact with obstructions to light
+
+List of work items:
+- Implement light processing (light of the cone meeting walls / enemies)
+
+
+Polish Item 2:
+Refine map visibility
+
+List of work items:
+Selectively process visibility of terrain/enemies outside the area lit up by the cone
+
+Questions to answer:
+How dark is dark and grayscale? Do we give away the topology of the level in grayscale already? If yes, in full or only areas that have been passed?
+And how clear is it still? More like first gen pokemon tunnels without flash?
+Are enemies still visible in greyscale? (I think better not, a visual representation for sound would be good for the kunais anyway and if they're visible it may make the game too easy)
+Some page making an interesting comment about how knowledge of topography may enable owls to hunt based on sound in complete darkness when they otherwise could not: https://www.bto.org/our-science/projects/project-owl/learn-about-owls/owl-hearing
+What is the technically smartest way to process selective visuals for things not in the cone (e.g. terrain) when we're darkening it without forcing visual requirements on the tileset?
+
+Polish Item 3:
+Add head turning realism (as much as needed, cause being able to infinitely spin the head might be weird, albeit funny)
+Owls can only turn their head 270° from the front in either direction
+
+List of work items:
+Make the head rotate the other way to the desired direction if the head rotates too far in one direction relative to body position.
+
+Questions to answer:
+How fast?
+Is it more disturbing to keep infinite rotation or more unfun to add a rotation reset (that takes time) as a restriction?
+
