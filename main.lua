@@ -1,23 +1,16 @@
+require("lldebugger").start()
+
 require("game.libs.batteries"):export()
 local baton = require("game.libs.baton")
 local Lighter = require("game.libs.lighter")
-local polygonBoolean = require("game.libs.2d-polygon-boolean")
-local PolyBool = require("game.libs.PolyBool")
 Concord = require("game.libs.Concord")
 require("game.ecs.components")
-local controllableSystem = require("game.ecs.systems.controllableSystem")
-local drawSystem = require("game.ecs.systems.drawSystem")
 require("game.helpers")
+local createWorld = require("game.ecs.world")
 
 function love.load(args)
-  if args and args[1] == "debug" then
-    require("lldebugger").start()
-  end
-
-  World = Concord.world()
-  World:addSystem(controllableSystem)
-  World:addSystem(drawSystem)
-  PlayerCharacter = Concord.entity(World)
+  World = createWorld("assets/maps/testmap.lua")
+  PlayerCharacter = Concord.entity()
   PlayerCharacter: give("position", 100, 100)
                   :give("controllable", baton.new({
                         controls = {
@@ -32,13 +25,15 @@ function love.load(args)
                         joystick = love.joystick.getJoysticks()[1]
                       }))
                   :give("texture", "assets/owl/placeholder.png")
+                  :give("hitbox", 30, 30)
+  World:addEntity(PlayerCharacter)
 end
 
 function love.update(dt)
+  
   World:emit("update", dt)
 end
 
-local flattened = {}
 function love.draw()
   love.graphics.print("Hello Owl Ninja")
   World:emit("draw")
