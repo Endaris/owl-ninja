@@ -9,8 +9,9 @@ function drawSystem:draw()
         self.map:draw()
     end
     for _, entity in ipairs(self.pool) do
+
         if entity.texture.draw then
-            entity.texture:draw()
+            entity.texture.draw(entity)
         else
             love.graphics.draw(entity.texture.image, entity.position.x, entity.position.y)
         end

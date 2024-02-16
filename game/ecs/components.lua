@@ -1,6 +1,11 @@
+local anim8 = require("game.libs.anim8")
+
 Concord.component("position", function(component, x, y)
     component.x = x or 0
     component.y = y or 0
+    component.faceX = 0
+    component.faceY = 1
+    component.moving = 0
 end)
 
 Concord.component("texture", function(component, path, drawFunc)
@@ -17,4 +22,10 @@ end)
 Concord.component("hitbox", function(component, width, height)
     component.width = width
     component.height = height
+end)
+
+Concord.component("animation", function(component, atlas, width, height, offsetX, offsetY)
+    component.atlas = love.graphics.newImage(atlas)
+    local w, h = component.atlas:getDimensions()
+    component.grid = anim8.newGrid(width, height, w, h, offsetX or 0, offsetY or 0)
 end)

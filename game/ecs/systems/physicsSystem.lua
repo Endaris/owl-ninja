@@ -1,6 +1,5 @@
 local Concord = require("game.libs.Concord")
 local bump = require("game.libs.bump")
-local sti = require("game.libs.sti")
 
 
 local physicsSystem = Concord.system({pool = {"controllable", "position", "hitbox"}})
@@ -20,6 +19,13 @@ function physicsSystem:update(dt)
     for _, entity in ipairs(self.pool) do
         entity.controllable.input:update()
         local x, y = entity.controllable.input:get("move")
+        if x ~= 0 or y ~= 0 then
+            entity.position.faceX = x
+            entity.position.faceY = y
+            entity.position.moving = entity.position.moving + dt
+        else
+            entity.position.moving = 0
+        end
         local newX, newY = entity.position.x + x * dt * 100, entity.position.y + y * dt * 100
         local actualX, actualY, cols, len = self.world:move(entity, newX, newY)
         if len >= 1 then
@@ -27,6 +33,8 @@ function physicsSystem:update(dt)
         end
         entity.position.x = actualX
         entity.position.y = actualY
+
+
     end
 end
 
