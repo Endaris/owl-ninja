@@ -356,6 +356,9 @@ local function collectClipResults(subjectList, clipList, getMostRevelant)
             while true do
 
                 walker.visited = true
+                if (forward and walker.next == nil) or not walker.prev then
+                    local phi = 5
+                end
                 walker = forward and walker.next or walker.prev
 
                 if walker.intersect then

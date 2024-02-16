@@ -254,7 +254,7 @@ local Lighter = Class{
       self.litPolygons = options.litPolygons
     end
   end,
-  addLight = function(self, x, y, radius, r, g, b, a, gradientImage)
+  addLight = function(self, x, y, radius, r, g, b, a, gradientImage, angle, orientation)
     local light = {
       x = x, y = y, radius = radius,
       r = r or 1, g = g or 1, b = b or 1, a = a or 1,
@@ -266,7 +266,7 @@ local Lighter = Class{
 
     return light
   end,
-  updateLight = function(self, light, x, y, radius, r, g, b, a, gradientImage)
+  updateLight = function(self, light, x, y, radius, r, g, b, a, gradientImage, angle, orientation)
     light.x = x or light.x
     light.y = y or light.y
     light.radius = radius or light.radius
