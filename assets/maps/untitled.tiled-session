@@ -7,6 +7,17 @@
     "expandedProjectPaths": [
     ],
     "fileStates": {
+        "untitled.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 193.66666666666666,
+                "y": 192.66666666666663
+            }
+        },
+        "untitled.tmx#1big_4x": {
+            "scaleInDock": 1
+        }
     },
     "last.exportedFilePath": "/home/florian/Code/owl-ninja/assets/maps",
     "last.imagePath": "/home/florian/Code/owl-ninja/assets/maps",
@@ -17,6 +28,7 @@
     "project": "untitled.tiled-project",
     "property.type": "bool",
     "recentFiles": [
+        "untitled.tmx"
     ],
     "tileset.embedInMap": true
 }

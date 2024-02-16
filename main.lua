@@ -5,7 +5,6 @@ local baton = require("game.libs.baton")
 local Lighter = require("game.libs.lighter")
 Concord = require("game.libs.Concord")
 require("game.ecs.components")
-require("game.helpers")
 local createWorld = require("game.ecs.world")
 
 function love.load(args)
