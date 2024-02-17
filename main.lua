@@ -1,5 +1,3 @@
-require("lldebugger").start()
-
 require("game.libs.batteries"):export()
 local Lighter = require("game.libs.lighter")
 Concord = require("game.libs.Concord")
@@ -7,6 +5,9 @@ require("game.ecs.components")
 local createWorld = require("game.ecs.world")
 
 function love.load(args)
+  if args and args[1] == "debug" then
+    require("lldebugger").start()
+  end
   World = createWorld("assets/maps/testmap.lua")
   World:addEntity(require("game.ecs.entities.playerCharacter"))
 end
