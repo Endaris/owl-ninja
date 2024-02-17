@@ -84,14 +84,14 @@ local function draw(pc)
        row = math.floor(pc.position.moving % 1 / (1/6)) + 1
     end
 
-    local xScale = 2
-    local yScale = 2
+    local xScale = 1
+    local yScale = 1
 
     if flip then
         xScale = xScale * -1
     end
 
-    love.graphics.draw(pc.animation.atlas, pc.animation.grid:getFrames(column, row)[1], pc.position.x, pc.position.y, 0, xScale, yScale, 16, 16)
+    love.graphics.draw(pc.animation.atlas, pc.animation.grid:getFrames(column, row)[1], mathx.round(pc.position.x), mathx.round(pc.position.y), 0, xScale, yScale, 16, 16)
 end
 
 PlayerCharacter = Concord.entity()
@@ -110,6 +110,6 @@ PlayerCharacter: give("position", 100, 100)
                     }))
                 :give("texture", "assets/owl/owl.png", draw)
                 :give("animation", "assets/owl/owl.png", 32, 32)
-                :give("hitbox", 30, 30)
+                :give("hitbox", 20, 20)
 
 return PlayerCharacter
