@@ -83,20 +83,57 @@ local function getMinMaxFromPolygons(originX, originY, radius, polygons)
   return minX, minY, maxX, maxY
 end
 
-local function calculateVisibilityPolygon(originX, originY, radius, polygons)
-  local visibilityPolygon = {}
+local function getRayForAngle(angle, originX, originY, radius, allPolygons)
+  
+  -- The ray we cast is originX, originY, rayX2, rayY2
+  -- rayX2, rayY2 are origin + angle*radius
+  local dirX, dirY = math.cos(angle), math.sin(angle)
+  local rayX2, rayY2 = vector.add(originX, originY, vector.mul(radius, vector.normalize(dirX, dirY)))
 
-  local minX, minY, maxX, maxY = getMinMaxFromPolygons(originX, originY, radius, polygons)
+  -- Next up we find the shortest intersection point for each ray.
+  -- We store the shortest so far in the min* variables defined below
+  local minX, minY, minAngle
+  local minLength = math.huge
+  local found = false
 
-  -- Required for the lines to always have something to intersect
-  local surroundPolygon = {
-    minX, minY,
-    maxX, minY,
-    maxX, maxY,
-    minX, maxY,
-    minX, minY
-  }
+  -- Go through all the points as line segments (x1,y1,x2,y2).
+  -- See where the ray intersects (if it does at all) with the line
+  -- segment. If it does, check if it's the shortest length from
+  -- origin so far. If it is, then that's the point we want to store
+  -- in visibilityPolygon
+  for _, polygon2 in ipairs(allPolygons) do
+    for u=1,#polygon2-2,2 do
+      local segmentX1 = polygon2[u]
+      local segmentY1 = polygon2[u+1]
+      local segmentX2 = polygon2[u+2]
+      local segmentY2 = polygon2[u+3]
 
+      -- Now check for actual intersection between
+      -- the ray cast from the origin point and the line segment.
+      local intersectX, intersectY = getLineIntersectionPoint(
+      originX, originY, rayX2, rayY2,
+      segmentX1, segmentY1, segmentX2, segmentY2
+      )
+
+      if intersectX and intersectY then
+        local length = vector.len2(vector.sub(intersectX, intersectY, originX, originY))
+        if length < minLength then
+          minX, minY, minAngle = intersectX, intersectY, angle
+          minLength = length
+          found = true
+        end
+      end
+    end
+  end
+
+  if found then
+    return {
+      x = minX, y = minY, angle = minAngle
+    }
+  end
+end
+
+local function getPolygonCopies(polygons)
   local allPolygons = {}
 
   for _, polygon in ipairs(polygons) do
@@ -111,6 +148,27 @@ local function calculateVisibilityPolygon(originX, originY, radius, polygons)
 
     table.insert(allPolygons, copiedPolygon)
   end
+
+  return allPolygons
+end
+
+local function calculateVisibilityPolygon(originX, originY, radius, polygons, angle, orientation)
+  orientation = mathx.normalise_angle(orientation)
+  local coneEnd =  orientation + angle
+  local visibilityPolygon = {}
+
+  local minX, minY, maxX, maxY = getMinMaxFromPolygons(originX, originY, radius, polygons)
+
+  -- Required for the lines to always have something to intersect
+  local surroundPolygon = {
+    minX, minY,
+    maxX, minY,
+    maxX, maxY,
+    minX, maxY,
+    minX, minY
+  }
+
+  local allPolygons = getPolygonCopies(polygons)
 
   table.insert(allPolygons, surroundPolygon)
 
@@ -129,67 +187,40 @@ local function calculateVisibilityPolygon(originX, originY, radius, polygons)
       local y = polygon[i+1]
       local a1, a2 = vector.sub(x, y, originX, originY)
 
-      local angleA = math.atan2(a2, a1)
+      local angleA = mathx.normalise_angle(math.atan2(a2, a1))
 
+      print(angleA .. " in comparison with " .. orientation .. " and " .. angle)
       _angles[1] = angleA
-      _angles[2] = angleA + 0.0001
-      _angles[3] = angleA - 0.0001
+      _angles[2] = mathx.normalise_angle(angleA + 0.0001)
+      _angles[3] = mathx.normalise_angle(angleA - 0.0001)
 
       -- Go through all 3 angles as rays cast from originX, originY
       for j=1,3 do
-        local angle = _angles[j]
-
-        -- The ray we cast is originX, originY, rayX2, rayY2
-        -- rayX2, rayY2 are origin + angle*radius
-        local dirX, dirY = math.cos(angle), math.sin(angle)
-        local rayX2, rayY2 = vector.add(originX, originY, vector.mul(radius, vector.normalize(dirX, dirY)))
-
-        -- Next up we find the shortest intersection point for each ray.
-        -- We store the shortest so far in the min* variables defined below
-        local minX, minY, minAngle
-        local minLength = math.huge
-        local found = false
-
-        -- Go through all the points as line segments (x1,y1,x2,y2).
-        -- See where the ray intersects (if it does at all) with the line
-        -- segment. If it does, check if it's the shortest length from
-        -- origin so far. If it is, then that's the point we want to store
-        -- in visibilityPolygon
-        for _, polygon2 in ipairs(allPolygons) do
-          for u=1,#polygon2-2,2 do
-            local segmentX1 = polygon2[u]
-            local segmentY1 = polygon2[u+1]
-            local segmentX2 = polygon2[u+2]
-            local segmentY2 = polygon2[u+3]
-
-            -- Now check for actual intersection between
-            -- the ray cast from the origin point and the line segment.
-            local intersectX, intersectY = getLineIntersectionPoint(
-            originX, originY, rayX2, rayY2,
-            segmentX1, segmentY1, segmentX2, segmentY2
-            )
-
-            if intersectX and intersectY then
-              local length = vector.len2(vector.sub(intersectX, intersectY, originX, originY))
-              if length < minLength then
-                minX, minY, minAngle = intersectX, intersectY, angle
-                minLength = length
-                found = true
-              end
-            end
+        if mathx.angleIsBetween(orientation, coneEnd, _angles[j]) then
+          if _angles[j] < orientation then
+            _angles[j] = _angles[j] + mathx.tau
           end
-        end
-
-        if found then
-          table.insert(visibilityPolygon, {
-            x = minX, y = minY, angle = minAngle
-          })
+          local ray = getRayForAngle(_angles[j], originX, originY, radius, allPolygons)
+          if ray then
+            table.insert(visibilityPolygon, ray)
+          end
         end
       end
     end
   end
 
+  if angle < mathx.tau then
+    local ray1 = getRayForAngle(orientation, originX, originY, radius, allPolygons)
+    local ray2 = getRayForAngle(orientation + angle, originX,originY, radius, allPolygons)
+    table.insert(visibilityPolygon, ray1)
+    table.insert(visibilityPolygon, ray2)
+  end
+
   table.sort(visibilityPolygon, angleSortFunc)
+  print("Printing visibility polygon")
+  for i = 1, #visibilityPolygon do
+    print("angle: " .. visibilityPolygon[i].angle .. ", x: " .. visibilityPolygon[i].x .. ", y: " .. visibilityPolygon[i].y)
+  end
   return visibilityPolygon
 end
 
@@ -224,7 +255,7 @@ local function updateLight(self, light)
     table.insert(polygons, polygon)
   end)
 
-  local visibilityPolygon = calculateVisibilityPolygon(light.x, light.y, light.radius, polygons)
+  local visibilityPolygon = calculateVisibilityPolygon(light.x, light.y, light.radius, polygons, light.angle, light.orientation)
   self.visibilityPolygons[light] = visibilityPolygon
   self.stencilFunctions[light] = function()
     self:drawVisibilityPolygon(light)
@@ -258,7 +289,9 @@ local Lighter = Class{
     local light = {
       x = x, y = y, radius = radius,
       r = r or 1, g = g or 1, b = b or 1, a = a or 1,
-      gradientImage = gradientImage or defaultGradientImage
+      gradientImage = gradientImage or defaultGradientImage,
+      angle = angle or math.pi * 2,
+      orientation = orientation or 0
     }
     table.insert(self.lights, light)
     self.lightHash:add(light, getLightBoundingBox(light))
@@ -275,6 +308,8 @@ local Lighter = Class{
     light.b = b or light.b
     light.a = a or light.a
     light.gradientImage = gradientImage or light.gradientImage
+    light.orientation = orientation or light.orientation
+    light.angle = angle or light.angle
 
     updateLight(self, light)
   end,
@@ -326,11 +361,11 @@ local Lighter = Class{
     local visibilityPolygon = self.visibilityPolygons[light]
     if #visibilityPolygon == 0 then return end
 
-    love.graphics.setColor(1,1,1)
-
+    
     for i=1,#visibilityPolygon-1 do
       local point1 = visibilityPolygon[i]
       local point2 = visibilityPolygon[i+1]
+      love.graphics.setColor(1, 1, 1)
       love.graphics.polygon('fill', {
         x, y,
         point1.x, point1.y,
@@ -338,13 +373,13 @@ local Lighter = Class{
       })
     end
 
-    local firstPoint = visibilityPolygon[1]
-    local lastPoint = visibilityPolygon[#visibilityPolygon]
-    love.graphics.polygon('fill', {
-      x, y,
-      lastPoint.x, lastPoint.y,
-      firstPoint.x, firstPoint.y
-    })
+    -- local firstPoint = visibilityPolygon[1]
+    -- local lastPoint = visibilityPolygon[#visibilityPolygon]
+    -- love.graphics.polygon('line', {
+    --   x, y,
+    --   lastPoint.x, lastPoint.y,
+    --   firstPoint.x, firstPoint.y
+    -- })
   end,
   drawLights = function(self)
     for _, light in ipairs(self.lights) do

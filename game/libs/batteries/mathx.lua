@@ -187,6 +187,23 @@ function mathx.angle_difference(a, b)
 	return mathx.normalise_angle(b - a)
 end
 
+-- assuming that "between" is considered any angle that is found when going clockwise from angle1 to angle2
+function mathx.angleIsBetween(referenceAngle1, referenceAngle2, betweenAngle)
+	referenceAngle1 = mathx.normalise_angle(referenceAngle1)
+	referenceAngle2 = mathx.normalise_angle(referenceAngle2)
+	betweenAngle = mathx.normalise_angle(betweenAngle)
+	-- pi / 2 ist größer als -pi
+	-- alles was normalisiert größer als pi / 2 aber kleiner als -pi ist, passt
+	if referenceAngle1 > referenceAngle2 then
+		return betweenAngle > referenceAngle1 or betweenAngle < referenceAngle2
+	-- -pi/2 ist kleiner as pi/2
+	elseif referenceAngle1 < referenceAngle2 then
+		return betweenAngle >= referenceAngle1 and betweenAngle <= referenceAngle2
+	else
+		return betweenAngle == referenceAngle1
+	end
+end
+
 --mathx.lerp equivalent for angles
 function mathx.lerp_angle(a, b, t)
 	local dif = mathx.angle_difference(a, b)
