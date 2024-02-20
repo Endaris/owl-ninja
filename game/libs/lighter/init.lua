@@ -154,7 +154,8 @@ end
 
 local function calculateVisibilityPolygon(originX, originY, radius, polygons, angle, orientation)
   orientation = mathx.normalise_angle(orientation)
-  local coneEnd =  orientation + angle
+  local coneStart = orientation - angle / 2
+  local coneEnd =  orientation + angle / 2
   local visibilityPolygon = {}
 
   local minX, minY, maxX, maxY = getMinMaxFromPolygons(originX, originY, radius, polygons)
@@ -189,15 +190,15 @@ local function calculateVisibilityPolygon(originX, originY, radius, polygons, an
 
       local angleA = mathx.normalise_angle(math.atan2(a2, a1))
 
-      print(angleA .. " in comparison with " .. orientation .. " and " .. angle)
+      --print(angleA .. " in comparison with " .. orientation .. " and " .. angle)
       _angles[1] = angleA
-      _angles[2] = mathx.normalise_angle(angleA + 0.0001)
-      _angles[3] = mathx.normalise_angle(angleA - 0.0001)
+      -- _angles[2] = mathx.normalise_angle(angleA + 0.0001)
+      -- _angles[3] = mathx.normalise_angle(angleA - 0.0001)
 
       -- Go through all 3 angles as rays cast from originX, originY
-      for j=1,3 do
-        if mathx.angleIsBetween(orientation, coneEnd, _angles[j]) then
-          if _angles[j] < orientation then
+      for j=1, #_angles do
+        if mathx.angleIsBetween(coneStart, coneEnd, _angles[j]) then
+          if _angles[j] < coneStart then
             _angles[j] = _angles[j] + mathx.tau
           end
           local ray = getRayForAngle(_angles[j], originX, originY, radius, allPolygons)
@@ -210,17 +211,17 @@ local function calculateVisibilityPolygon(originX, originY, radius, polygons, an
   end
 
   if angle < mathx.tau then
-    local ray1 = getRayForAngle(orientation, originX, originY, radius, allPolygons)
-    local ray2 = getRayForAngle(orientation + angle, originX,originY, radius, allPolygons)
+    local ray1 = getRayForAngle(coneStart, originX, originY, radius, allPolygons)
+    local ray2 = getRayForAngle(coneEnd, originX,originY, radius, allPolygons)
     table.insert(visibilityPolygon, ray1)
     table.insert(visibilityPolygon, ray2)
   end
 
   table.sort(visibilityPolygon, angleSortFunc)
-  print("Printing visibility polygon")
-  for i = 1, #visibilityPolygon do
-    print("angle: " .. visibilityPolygon[i].angle .. ", x: " .. visibilityPolygon[i].x .. ", y: " .. visibilityPolygon[i].y)
-  end
+  -- print("Printing visibility polygon")
+  -- for i = 1, #visibilityPolygon do
+  --   print("angle: " .. visibilityPolygon[i].angle .. ", x: " .. visibilityPolygon[i].x .. ", y: " .. visibilityPolygon[i].y)
+  -- end
   return visibilityPolygon
 end
 
@@ -280,6 +281,8 @@ local Lighter = Class{
     self.polygons = {}
     self.visibilityPolygons = {}
     self.stencilFunctions = {}
+    self.triangles = {}
+    self.mergedPoly = {}
 
     if options then
       self.litPolygons = options.litPolygons

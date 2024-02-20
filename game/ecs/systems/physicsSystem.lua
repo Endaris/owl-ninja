@@ -11,7 +11,7 @@ function physicsSystem:loadMap(map)
 end
 
 function physicsSystem:addToBumpWorld(entity)
-    self.world:add(entity, entity.position.x, entity.position.y, entity.hitbox.width, entity.hitbox.height)
+    --self.world:add(entity, entity.position.x, entity.position.y, entity.hitbox.width, entity.hitbox.height)
 end
 
 function physicsSystem:update(dt)
@@ -27,7 +27,7 @@ function physicsSystem:update(dt)
             entity.position.moving = 0
         end
         local newX, newY = entity.position.x + x * dt * 100, entity.position.y + y * dt * 100
-        local actualX, actualY, cols, len = self.world:move(entity, newX, newY)
+        local actualX, actualY, cols, len = newX, newY, nil, 0--self.world:move(entity, newX, newY)
         if len >= 1 then
             -- handle collision / shimmy
         end

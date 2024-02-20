@@ -1,45 +1,6 @@
 local baton = require("game.libs.baton")
 local anim8 = require("game.libs.anim8")
-
-local function getDirection(pc)
-    -- in screen coordinates, positive x is RIGHT
-    local fX = pc.position.faceX
-    -- in screen coordinates, positive y is DOWN
-    -- let's pretend these are cartesian coordinates though
-    local fY = -1 * pc.position.faceY
-    local angle
-    if fX == 0 then
-        if fY > 0 then
-            angle = math.pi / 2
-        elseif fY < 0 then
-            angle = 3 * math.pi / 2
-        else
-            error()
-        end
-    elseif fY == 0 then
-        if fX > 0 then
-            angle = 0
-        elseif fX < 0 then
-            angle = math.pi
-        else
-            error()
-        end
-    else
-        if  (fY > 0 and fX > 0) then
-            angle = math.atan(fY / fX)
-        elseif  (fX < 0 and fY > 0) then
-            angle = math.atan(fX / fY) + math.pi
-        elseif (fY < 0 and fX < 0) then
-            angle = math.atan(fY / fX) + math.pi
-        else
-            angle = math.atan(fX / fY) + 2 * math.pi
-        end
-    end
-    -- offset by half an eight of a circle to have the center of each area point in the cardinal direction
-    angle = angle + math.pi / 8
-    local offset = math.abs(angle / (math.pi / 4))
-    return math.floor(offset)
-end
+local helpers = require("game.helpers")
 
 local function isMoving(pc)
     local x, y = pc.controllable.input:get("move")
@@ -75,7 +36,10 @@ local function getColumnFlip(idx)
 end
 
 local function draw(pc)
-    local sector = getDirection(pc)
+    local angle = helpers.getFacingDirection(pc.position.faceX, pc.position.faceY)
+    -- offset by half an eight of a circle to have the center of each area point in the cardinal direction
+    angle = angle + math.pi / 8
+    local sector = math.floor(math.abs(angle / (math.pi / 4)))
     local row
     local column, flip = getColumnFlip(sector)
     if not isMoving(pc) then
@@ -111,5 +75,6 @@ PlayerCharacter: give("position", 100, 100)
                 :give("texture", "assets/owl/owl.png", draw)
                 :give("animation", "assets/owl/owl.png", 32, 32)
                 :give("hitbox", 20, 20)
+                :give("coneOfRevelation", (4/9) * math.pi)
 
 return PlayerCharacter

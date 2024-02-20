@@ -10,7 +10,6 @@ function drawSystem:loadMap(map)
 end
 
 function drawSystem:draw()
-    love.graphics.setCanvas(self.canvas)
     if self.map then
         self.map:draw()
     end
@@ -29,8 +28,8 @@ function drawSystem:draw()
             love.graphics.draw(entity.texture.image, entity.position.x, entity.position.y)
         end
     end
-    love.graphics.setCanvas()
-    love.graphics.draw(self.canvas, 0, 0, 0, 2, 2)
+    -- love.graphics.setCanvas()
+    -- love.graphics.draw(self.canvas, 0, 0, 0, 2, 2)
 end
 
 return drawSystem
